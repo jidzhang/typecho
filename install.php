@@ -512,8 +512,18 @@ Typecho_Cookie::set('__typecho_lang', $lang);
                                     }
                                     $config = str_replace($replace, array_values($dbConfig), _r('config'));
                                 }
-
                                 if (!isset($config) && $success && !_r('created')) {
+                                    //create DB: typecho
+                                    do {
+                                        $con = mysql_connect(":$dbConfig[port]", "$dbConfig[user]", "$dbConfig[password]");
+                                        if($con) {
+                                            if (!mysql_select_db("$dbConfig[database]", $con)) {
+                                                mysql_query("CREATE DATABASE IF NOT EXISTS $dbConfig[database] default charset $dbConfig[charset] COLLATE utf8_general_ci", $con);
+                                            }
+                                            mysql_close($con);
+                                        }
+                                    } while (0);
+
                                     $installDb = new Typecho_Db($adapter, _r('dbPrefix'));
                                     $installDb->addServer($dbConfig, Typecho_Db::READ | Typecho_Db::WRITE);
 
