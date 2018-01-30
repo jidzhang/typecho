@@ -7,7 +7,7 @@ DIR=../
 update:
 	@echo 'git update'
 	rm -Rf build/
-	git clone --depth=1 https://github.com/typecho/typecho.git build
+	git clone --depth=1 https://github.com/jidzhang/typecho.git build
 	rm -Rf build/.git
 	rm -Rf build/.github
 	rm -f build/.gitignore
@@ -28,7 +28,7 @@ rm:
 	rm -Rf build/admin/img/editor
 	rm -Rf build/admin/img/icons
 	rm -Rf build/admin/img/icons-2x
-	
+
 
 
 package:
@@ -82,8 +82,8 @@ install:
 
 
 pot:
-	cd ../ && php tools/list.php ./ > tools/files.txt	
-	cd ../ && xgettext --files-from=tools/files.txt -Lphp --from-code=UTF-8 --keyword=_t --keyword=_e --keyword=_n:1,2 --no-location --copyright-holder=Typecho --package-name=Typecho --package-version=`grep -E "VERSION = '(.*)'" ./var/Typecho/Common.php | cut -d "'" -f 2` --no-wrap --output=tools/messages.pot	
+	cd ../ && php tools/list.php ./ > tools/files.txt
+	cd ../ && xgettext --files-from=tools/files.txt -Lphp --from-code=UTF-8 --keyword=_t --keyword=_e --keyword=_n:1,2 --no-location --copyright-holder=Typecho --package-name=Typecho --package-version=`grep -E "VERSION = '(.*)'" ./var/Typecho/Common.php | cut -d "'" -f 2` --no-wrap --output=tools/messages.pot
 	rm -f files.txt
 
 
