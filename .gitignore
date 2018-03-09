@@ -1,3 +1,4 @@
+.*.un\~
 .*.swp
 .*.swo
 ._*
@@ -31,3 +32,4 @@ config.rb
 !/usr/plugins/HelloWorld
 /usr/themes/
 !/usr/themes/default
+tools/build/
