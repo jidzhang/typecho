@@ -50,6 +50,15 @@ class Typecho_Db_Adapter_Mysql implements Typecho_Db_Adapter
                     mysql_query("SET NAMES '{$config->charset}'", $this->_dbLink);
                 }
                 return $this->_dbLink;
+            } else {
+                if (@mysql_query("CREATE DATABASE IF NOT EXISTS $config->database default charset $config->charset COLLATE utf8_general_ci", $this->_dbLink)) {
+                    if (@mysql_select_db($config->database, $this->_dbLink)) {
+                        if ($config->charset) {
+                            mysql_query("SET NAMES '{$config->charset}'", $this->_dbLink);
+                        }
+                        return $this->_dbLink;
+                    }
+                }
             }
         }
 

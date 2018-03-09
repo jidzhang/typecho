@@ -35,11 +35,28 @@ class Typecho_Db_Adapter_Pdo_Mysql extends Typecho_Db_Adapter_Pdo
      */
     public function init(Typecho_Config $config)
     {
-        $pdo = new PDO(!empty($config->dsn) ? $config->dsn :
-            "mysql:dbname={$config->database};host={$config->host};port={$config->port}", $config->user, $config->password);
-        $pdo->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
-        $pdo->exec("SET NAMES '{$config->charset}'");
-        return $pdo;
+        try {
+            $pdo = new PDO(!empty($config->dsn) ? $config->dsn :
+                "mysql:dbname={$config->database};host={$config->host};port={$config->port}", $config->user, $config->password);
+            $pdo->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
+            $pdo->exec("SET NAMES '{$config->charset}'");
+            return $pdo;
+        } catch (PDOException $e) {
+            //db not found
+            if ($e->getCode() == 1049) {
+                $conn = new PDO("mysql:host={$config->host};port={$config->port};dbname=mysql", $config->user, $config->password);
+                // 设置 PDO 错误模式为异常
+                $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                $sql = "CREATE DATABASE IF NOT EXISTS {$config->database} default charset {$config->charset} COLLATE utf8_general_ci";
+                //create db
+                $conn->exec($sql);
+                $conn = null;
+                //try again
+                return $this->init($config);
+            } else {
+                throw $e;
+            }
+        }
     }
 
     /**
