@@ -121,6 +121,7 @@ class Typecho_Router
 
         foreach (self::$_routingTable as $key => $route) {
             if (preg_match($route['regx'], $pathInfo, $matches)) {
+
                 self::$current = $key;
 
                 try {

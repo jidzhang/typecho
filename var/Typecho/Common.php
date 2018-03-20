@@ -12,6 +12,45 @@
 define('__TYPECHO_MB_SUPPORTED__', function_exists('mb_get_info') && function_exists('mb_regex_encoding'));
 
 /**
+ * I18n function
+ *
+ * @param string $string 需要翻译的文字
+ * @return string
+ */
+function _t($string) {
+    if (func_num_args() <= 1) {
+        return Typecho_I18n::translate($string);
+    } else {
+        $args = func_get_args();
+        array_shift($args);
+        return vsprintf(Typecho_I18n::translate($string), $args);
+    }
+}
+
+/**
+ * I18n function, translate and echo
+ *
+ * @param string $string 需要翻译并输出的文字
+ * @return void
+ */
+function _e() {
+    $args = func_get_args();
+    echo call_user_func_array('_t', $args);
+}
+
+/**
+ * 针对复数形式的翻译函数
+ *
+ * @param string $single 单数形式的翻译
+ * @param string $plural 复数形式的翻译
+ * @param integer $number 数字
+ * @return string
+ */
+function _n($single, $plural, $number) {
+    return str_replace('%d', $number, Typecho_I18n::ngettext($single, $plural, $number));
+}
+
+/**
  * Typecho公用方法
  *
  * @category typecho
@@ -22,7 +61,7 @@ define('__TYPECHO_MB_SUPPORTED__', function_exists('mb_get_info') && function_ex
 class Typecho_Common
 {
     /** 程序版本 */
-    const VERSION = '1.1/17.12.14';
+    const VERSION = '1.2/18.1.29';
 
     /**
      * 允许的属性
@@ -1093,7 +1132,7 @@ EOF;
     {
         $buffer = '';
 
-        $buffer .= pack('vvv', $type, strlen($header), strlen($body));
+        $buffer .= pack('vvV', $type, strlen($header), strlen($body));
         $buffer .= $header . $body;
         $buffer .= md5($buffer);
 
@@ -1105,25 +1144,34 @@ EOF;
      *
      * @param $fp
      * @param bool $offset
+     * @param string $version
      * @return array|bool
      */
-    public static function extractBackupBuffer($fp, &$offset)
+    public static function extractBackupBuffer($fp, &$offset, $version)
     {
-        $meta = fread($fp, 6);
-        $offset += 6;
+        $realMetaLen = $version == 'FILE' ? 6 : 8;
+
+        $meta = fread($fp, $realMetaLen);
+        $offset += $realMetaLen;
         $metaLen = strlen($meta);
 
-        if (false === $meta || $metaLen != 6) {
+        if (false === $meta || $metaLen != $realMetaLen) {
             return false;
         }
 
-        list ($type, $headerLen, $bodyLen) = array_values(unpack('v3', $meta));
+        list ($type, $headerLen, $bodyLen) = array_values(unpack($version == 'FILE' ? 'v3' : 'v1type/v1headerLen/V1bodyLen', $meta));
 
         $header = @fread($fp, $headerLen);
         $offset += $headerLen;
 
         if (false === $header || strlen($header) != $headerLen) {
             return false;
+        }
+
+        if ('FILE' == $version) {
+            $bodyLen = array_reduce(json_decode($header, true), function ($carry, $len) {
+                return NULL === $len ? $carry : $carry + $len;
+            }, 0);
         }
 
         $body = @fread($fp, $bodyLen);

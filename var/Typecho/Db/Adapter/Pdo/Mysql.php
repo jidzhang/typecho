@@ -27,6 +27,19 @@ class Typecho_Db_Adapter_Pdo_Mysql extends Typecho_Db_Adapter_Pdo
     }
 
     /**
+     * 清空数据表
+     *
+     * @param string $table
+     * @param mixed $handle 连接对象
+     * @return mixed|void
+     * @throws Typecho_Db_Exception
+     */
+    public function truncate($table, $handle)
+    {
+        $this->query('TRUNCATE TABLE ' . $this->quoteColumn($table), $handle);
+    }
+
+    /**
      * 初始化数据库
      *
      * @param Typecho_Config $config 数据库配置
@@ -35,28 +48,11 @@ class Typecho_Db_Adapter_Pdo_Mysql extends Typecho_Db_Adapter_Pdo
      */
     public function init(Typecho_Config $config)
     {
-        try {
-            $pdo = new PDO(!empty($config->dsn) ? $config->dsn :
-                "mysql:dbname={$config->database};host={$config->host};port={$config->port}", $config->user, $config->password);
-            $pdo->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
-            $pdo->exec("SET NAMES '{$config->charset}'");
-            return $pdo;
-        } catch (PDOException $e) {
-            //db not found
-            if ($e->getCode() == 1049) {
-                $conn = new PDO("mysql:host={$config->host};port={$config->port};dbname=mysql", $config->user, $config->password);
-                // 设置 PDO 错误模式为异常
-                $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-                $sql = "CREATE DATABASE IF NOT EXISTS {$config->database} default charset {$config->charset} COLLATE utf8_general_ci";
-                //create db
-                $conn->exec($sql);
-                $conn = null;
-                //try again
-                return $this->init($config);
-            } else {
-                throw $e;
-            }
-        }
+        $pdo = new PDO(!empty($config->dsn) ? $config->dsn :
+            "mysql:dbname={$config->database};host={$config->host};port={$config->port}", $config->user, $config->password);
+        $pdo->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
+        $pdo->exec("SET NAMES '{$config->charset}'");
+        return $pdo;
     }
 
     /**

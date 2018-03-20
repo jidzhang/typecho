@@ -112,13 +112,34 @@ class Widget_Security extends Typecho_Widget
         return Typecho_Common::buildUrl($parts);
     }
 
+    private function getTokenFromUrl() {
+        $url = $this->request->getRequestUri();
+        $parts = parse_url($url);
+        $arr_query = $this->convertUrlQuery($parts['query']);
+        return $arr_query['_'];
+    }
+
+    private function convertUrlQuery($query)
+    {
+        $queryParts = explode('&', $query);
+        $params = array();
+        foreach ($queryParts as $param) {
+            $item = explode('=', $param);
+            $params[$item[0]] = $item[1];
+        }
+        return $params;
+    }
+
     /**
      * 保护提交数据
      *
      */
     public function protect()
     {
-        if ($this->_enabled && $this->request->get('_') != $this->getToken($this->request->getReferer())) {
+//        if ($this->_enabled && $this->request->get('_') != $this->getToken($this->request->getReferer())) {
+//            $this->response->goBack();
+//        }
+        if ($this->_enabled && $this->getTokenFromUrl() != $this->getToken($this->request->getReferer())) {
             $this->response->goBack();
         }
     }

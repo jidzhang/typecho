@@ -28,7 +28,7 @@ rm:
 	rm -Rf build/admin/img/editor
 	rm -Rf build/admin/img/icons
 	rm -Rf build/admin/img/icons-2x
-
+	
 
 
 package:
@@ -82,8 +82,8 @@ install:
 
 
 pot:
-	cd ../ && php tools/list.php ./ > tools/files.txt
-	cd ../ && xgettext --files-from=tools/files.txt -Lphp --from-code=UTF-8 --keyword=_t --keyword=_e --keyword=_n:1,2 --no-location --copyright-holder=Typecho --package-name=Typecho --package-version=`grep -E "VERSION = '(.*)'" ./var/Typecho/Common.php | cut -d "'" -f 2` --no-wrap --output=tools/messages.pot
+	cd ../ && php tools/list.php ./ > tools/files.txt	
+	cd ../ && xgettext --files-from=tools/files.txt -Lphp --from-code=UTF-8 --keyword=_t --keyword=_e --keyword=_n:1,2 --no-location --copyright-holder=Typecho --package-name=Typecho --package-version=`grep -E "VERSION = '(.*)'" ./var/Typecho/Common.php | cut -d "'" -f 2` --no-wrap --output=tools/messages.pot	
 	rm -f files.txt
 
 
